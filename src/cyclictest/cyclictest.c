@@ -1988,16 +1988,23 @@ static void print_hist(struct thread_param *par[], int nthreads)
 	fprintf(fd, "# Histogram\n");
 	for (i = 0; i < histogram; i++) {
 		unsigned long long int allthreads = 0;
+		unsigned long curr_latency = 0;
+
+		for (j = 0; j < nthreads ; j++) {
+			curr_latency = par[j]->stats->hist_array[i];
+			allthreads += curr_latency;
+			log_entries[j] += curr_latency;
+		}
+		if (!allthreads)
+			continue;
 
 		fprintf(fd, "%06d ", i);
 
 		for (j = 0; j < nthreads; j++) {
-			unsigned long curr_latency=par[j]->stats->hist_array[i];
+			curr_latency = par[j]->stats->hist_array[i];
 			fprintf(fd, "%06lu", curr_latency);
 			if (j < nthreads - 1)
 				fprintf(fd, "\t");
-			log_entries[j] += curr_latency;
-			allthreads += curr_latency;
 		}
 		if (histofall && nthreads > 1) {
 			fprintf(fd, "\t%06llu", allthreads);
